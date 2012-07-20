@@ -7,6 +7,12 @@ import jbossconfigurator.preferences.constants.types.PreferenceTypeConstants;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -19,6 +25,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 
 public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+
+	protected Button changeDataSource;
 
 	public JBossConfiguratorPreferencePage() {
 		super(GRID);
@@ -47,4 +55,16 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 	public void init(IWorkbench workbench) {
 	}
 
+	protected Control createContents(Composite parent) {
+		Control returnControl = super.createContents(parent);
+		changeDataSource = new Button(parent, SWT.PUSH);
+		changeDataSource.setText(PreferenceStringConstants.CHANGE_DATA_SOURCE);
+		changeDataSource.setEnabled(true);
+		changeDataSource.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+
+			}
+		});
+		return returnControl;
+	}
 }

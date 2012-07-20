@@ -6,4 +6,5 @@ public class PreferenceStringConstants {
 	public static final String JBOSS_PASSWORD = "&Password:";
 	public static final String JBOSS_URL = "U&RL:";
 	public static final String PREFRENCES_DESCRIPTION = "JBoss Settings";
+	public static final String CHANGE_DATA_SOURCE = "Change Data Source";
 }
