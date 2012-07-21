@@ -170,6 +170,9 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 				if (entryName != null && name != null && entryName.trim().equals(name.trim())) {
 					fEntryNamesAndValues[i][1] = nameValue[1];
 					saveNameValuePreferences();
+					fCombo.select(i);
+					fCombo.redraw();
+					makeChangedEvent();
 					return;
 				}
 			}
@@ -178,8 +181,19 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 			newValueList[fEntryNamesAndValues.length] = nameValue;
 			fEntryNamesAndValues = newValueList;
 			fCombo.add(nameValue[0]);
+			fCombo.select(fEntryNamesAndValues.length - 1);
+			fCombo.redraw();
+			makeChangedEvent();
 			saveNameValuePreferences();
 		}
+	}
+
+	private void makeChangedEvent() {
+		String oldValue = fValue;
+		String name = fCombo.getText();
+		fValue = getValueForName(name);
+		setPresentsDefaultValue(false);
+		fireValueChanged("field_editor_value", oldValue, name + "," + fValue);
 	}
 
 	private void saveNameValuePreferences() {
@@ -199,5 +213,32 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 	private Combo fCombo;
 	private String fValue;
 	private String fEntryNamesAndValues[][];
+
+	protected void deleteItemFromValueList(int index) {
+		String[][] newValueList = new String[fEntryNamesAndValues.length - 1][2];
+		int skipValue = 0;
+		for (int i = 0; i < fEntryNamesAndValues.length; i++) {
+			if (i == index) {
+				skipValue = 1;
+			} else {
+				newValueList[i - skipValue] = fEntryNamesAndValues[i];
+			}
+		}
+		fEntryNamesAndValues = newValueList;
+		fCombo.select(index - 1);
+		fCombo.redraw();
+		makeChangedEvent();
+		saveNameValuePreferences();
+	}
+
+	public void deleteCurrentProfile() {
+		if (fCombo != null) {
+			int selectedItem = fCombo.getSelectionIndex();
+			if (fEntryNamesAndValues != null && selectedItem < fEntryNamesAndValues.length && selectedItem != 0) {
+				fCombo.remove(selectedItem);
+				deleteItemFromValueList(selectedItem);
+			}
+		}
+	}
 
 }

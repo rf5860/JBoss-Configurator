@@ -127,6 +127,10 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 		profiles.updateNameValue(getProfileNameValue());
 	}
 
+	private void deleteProfileOption() {
+		profiles.deleteCurrentProfile();
+	}
+
 	protected Control createContents(Composite parent) {
 		Control returnControl = super.createContents(parent);
 		save = createButton(parent, PreferenceStringConstants.SAVE_PROFILE);
@@ -140,7 +144,7 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 
 		delete.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-
+				deleteProfileOption();
 			}
 		});
 		return returnControl;
