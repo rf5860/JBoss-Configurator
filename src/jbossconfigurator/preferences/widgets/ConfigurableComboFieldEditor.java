@@ -1,7 +1,12 @@
 package jbossconfigurator.preferences.widgets;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.FieldEditor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -10,6 +15,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
 public class ConfigurableComboFieldEditor extends FieldEditor {
+	protected List<IPropertyChangeListener> listeners = new ArrayList<IPropertyChangeListener>();
+
+	public void addListener(IPropertyChangeListener listener) {
+		listeners.add(listener);
+	}
+
+	public List<IPropertyChangeListener> getListeners() {
+		return listeners;
+	}
 
 	public ConfigurableComboFieldEditor(String name, String labelText, String entryNamesAndValues[][], Composite parent) {
 		init(name, labelText);
@@ -103,12 +117,20 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 					String name = fCombo.getText();
 					fValue = getValueForName(name);
 					setPresentsDefaultValue(false);
-					fireValueChanged("field_editor_value", oldValue, fValue);
+					fireValueChanged("field_editor_value", oldValue, name + "," + fValue);
 				}
 
 			});
 		}
 		return fCombo;
+	}
+
+	@Override
+	protected void fireValueChanged(String property, Object oldValue, Object newValue) {
+		super.fireValueChanged(property, oldValue, newValue);
+		for (IPropertyChangeListener listener : listeners) {
+			listener.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
+		}
 	}
 
 	private String getValueForName(String name) {

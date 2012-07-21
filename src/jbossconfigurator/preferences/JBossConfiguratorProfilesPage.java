@@ -7,6 +7,8 @@ import jbossconfigurator.preferences.widgets.ConfigurableComboFieldEditor;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -23,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
+	protected IPropertyChangeListener listener;
 	protected Button save;
 	protected Button delete;
 	protected ConfigurableComboFieldEditor profiles;
@@ -71,6 +74,7 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 
 	public void createFieldEditors() {
 		profiles = constructComboBox();
+		profiles.addListener(listener);
 		profileName = new StringFieldEditor(PreferenceTypeConstants.P_PROFILE_DISPLAY, PreferenceStringConstants.PROFILE, getFieldEditorParent());
 		userName = new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_USER, PreferenceStringConstants.JBOSS_USER, getFieldEditorParent());
 		password = new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_PASSWORD, PreferenceStringConstants.JBOSS_PASSWORD, getFieldEditorParent());
@@ -83,6 +87,21 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 	}
 
 	public void init(IWorkbench workbench) {
+		listener = new IPropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent event) {
+				String newValue = (String) event.getNewValue();
+				if (newValue != null && newValue.trim() != "") {
+					String[] values = newValue.split(",");
+					if (values != null && values.length == 4) {
+						profileName.setStringValue(values[0]);
+						userName.setStringValue(values[1]);
+						password.setStringValue(values[2]);
+						url.setStringValue(values[3]);
+					}
+				}
+			}
+
+		};
 	}
 
 	protected Button createButton(Composite parent, String text) {
@@ -124,7 +143,6 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 
 			}
 		});
-
 		return returnControl;
 	}
 }
