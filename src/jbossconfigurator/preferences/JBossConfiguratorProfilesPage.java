@@ -92,11 +92,18 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 				String newValue = (String) event.getNewValue();
 				if (newValue != null && newValue.trim() != "") {
 					String[] values = newValue.split(",");
-					if (values != null && values.length == 4) {
-						profileName.setStringValue(values[0]);
-						userName.setStringValue(values[1]);
-						password.setStringValue(values[2]);
-						url.setStringValue(values[3]);
+					if (values != null) {
+						if (values.length == 4) {
+							profileName.setStringValue(values[0]);
+							userName.setStringValue(values[1]);
+							password.setStringValue(values[2]);
+							url.setStringValue(values[3]);
+						} else {
+							profileName.setStringValue("");
+							userName.setStringValue("");
+							password.setStringValue("");
+							url.setStringValue("");
+						}
 					}
 				}
 			}
