@@ -18,6 +18,10 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 		createControl(parent);
 	}
 
+	public void store() {
+		// NOP
+	}
+
 	private boolean checkArray(String table[][]) {
 		if (table == null)
 			return false;
@@ -143,6 +147,7 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 				String entryName = fEntryNamesAndValues[i][0];
 				if (entryName != null && name != null && entryName.trim().equals(name.trim())) {
 					fEntryNamesAndValues[i][1] = nameValue[1];
+					saveNameValuePreferences();
 					return;
 				}
 			}
@@ -151,7 +156,22 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 			newValueList[fEntryNamesAndValues.length] = nameValue;
 			fEntryNamesAndValues = newValueList;
 			fCombo.add(nameValue[0]);
+			saveNameValuePreferences();
 		}
+	}
+
+	private void saveNameValuePreferences() {
+		String allPreferences = "";
+		if (fEntryNamesAndValues != null) {
+			for (String[] nameValue : fEntryNamesAndValues) {
+				String preferenceString = nameValue[0] + "," + nameValue[1];
+				if (allPreferences != "") {
+					allPreferences += "}";
+				}
+				allPreferences += preferenceString;
+			}
+		}
+		getPreferenceStore().setValue(getPreferenceName(), allPreferences);
 	}
 
 	private Combo fCombo;

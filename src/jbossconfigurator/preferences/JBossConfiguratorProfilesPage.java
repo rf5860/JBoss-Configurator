@@ -6,7 +6,6 @@ import jbossconfigurator.preferences.constants.types.PreferenceTypeConstants;
 import jbossconfigurator.preferences.widgets.ConfigurableComboFieldEditor;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,14 +38,18 @@ public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage imp
 		setDescription(PreferenceStringConstants.PROFILES_DESCRIPTION);
 	}
 	protected String[][] getProfiles() {
-		IPreferenceStore preferences = getPreferenceStore();
-		String profiles = preferences.getString("profiles");
+		String profiles = getPreferenceStore().getString(PreferenceTypeConstants.P_PROFILE_NAME);
 		String[] profileList = profiles.split("}");
 		if (profileList != null && profileList.length > 0 && profileList[0] != "") {
 			String[][] nameValues = new String[profileList.length][2];
 			for (int i = 0; i < profileList.length; i++) {
 				String profile = profileList[i];
 				String[] profileValues = profile.split(",");
+				if (profileValues.length != 4) {
+					nameValues[i][0] = "";
+					nameValues[i][1] = "";
+					continue;
+				}
 				String name = profileValues[0];
 				String user = profileValues[1];
 				String pass = profileValues[2];
