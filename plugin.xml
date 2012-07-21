@@ -9,9 +9,18 @@
             id="jbossconfigurator.preferences.JBossConfiguratorPreferencePage"
             name="JBoss Configurator Preferences">
       </page>
+      <page
+            class="jbossconfigurator.preferences.JBossConfiguratorProfilesPage"
+            id="jbossconfigurator.preferences.JBossConfiguratorProfilesPage"
+            name="JBoss Configurator Profiles"
+            category="jbossconfigurator.preferences.JBossConfiguratorPreferencePage">
+      </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="jbossconfigurator.preferences.PreferenceInitializer">
+      </initializer>
       <initializer
             class="jbossconfigurator.preferences.PreferenceInitializer">
       </initializer>

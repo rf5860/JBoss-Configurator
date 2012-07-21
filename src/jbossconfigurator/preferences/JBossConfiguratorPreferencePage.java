@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -50,6 +54,7 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 
 	public JBossConfiguratorPreferencePage() {
 		super(GRID);
+		noDefaultAndApplyButton();
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 		setDescription(PreferenceStringConstants.PREFRENCES_DESCRIPTION);
 	}
@@ -111,19 +116,25 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 		return null;
 	}
 
+	private void updateNode(Document doc, String name, String pref) {
+		System.out.println("Attempting to update " + name);
+		Node node = getAttributeWithName(doc, name);
+		if (node == null) {
+			System.err.println("Error retrieving " + name);
+			return;
+		}
+		updateNode(node, pref);
+	}
+
 	private void updateDataSource(File dataSource) {
+		System.out.println("Updating data source file.");
 		try {
 			parser.parse(dataSource.getAbsolutePath());
 			Document root = parser.getDocument();
-			Node userNode = getAttributeWithName(root, PreferenceStringConstants.JBOSS_USER);
-			Node passwordNode = getAttributeWithName(root, PreferenceStringConstants.JBOSS_PASSWORD);
-			Node urlNode = getAttributeWithName(root, PreferenceStringConstants.JBOSS_URL);
-			String user = userNode.getNodeValue();
-			String password = passwordNode.getNodeValue();
-			String url = urlNode.getNodeValue();
-			System.err.println("User: " + user);
-			System.err.println("Password: " + password);
-			System.err.println("URL: " + url);
+			updateNode(root, PreferenceStringConstants.JBOSS_USER_ATTRIBUTE, PreferenceTypeConstants.P_JBOSS_USER);
+			updateNode(root, PreferenceStringConstants.JBOSS_PASSWORD_ATTRIBUTE, PreferenceTypeConstants.P_JBOSS_PASSWORD);
+			updateNode(root, PreferenceStringConstants.JBOSS_URL_ATTRIBUTE, PreferenceTypeConstants.P_JBOSS_URL);
+			saveFile(dataSource, root);
 		} catch (SAXException e) {
 			System.err.println("Issue parsing data source file.");
 			e.printStackTrace();
@@ -131,6 +142,28 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 			System.err.println("Issue opening file.");
 			e.printStackTrace();
 		}
+		System.out.println("Finished updating data source file.");
+	}
+	private void saveFile(File file, Document doc) {
+		// Use a Transformer for output
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		try {
+			Transformer transformer = transformerFactory.newTransformer();
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(file);
+			transformer.transform(source, result);
+		} catch (Exception e) {
+			System.err.println("Error saving file.");
+			e.printStackTrace();
+		}
+
+	}
+
+	private void updateNode(Node node, String preference) {
+		IPreferenceStore preferencesStore = getPreferenceStore();
+		String value = preferencesStore.getString(preference);
+		System.out.println("Updating with value: '" + value + "'");
+		node.getFirstChild().setNodeValue(value);
 	}
 
 	private File getDataSourceFile() {
