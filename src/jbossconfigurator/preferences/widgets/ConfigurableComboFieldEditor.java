@@ -103,6 +103,28 @@ public class ConfigurableComboFieldEditor extends FieldEditor {
 		return 2;
 	}
 
+	public void setNameValues(String[][] nameValues) {
+		if (fCombo != null) {
+			fCombo.removeAll();
+			fEntryNamesAndValues = nameValues;
+			for (int i = 0; i < fEntryNamesAndValues.length; i++) {
+				fCombo.add(fEntryNamesAndValues[i][0], i);
+			}
+
+			fCombo.addSelectionListener(new SelectionAdapter() {
+
+				public void widgetSelected(SelectionEvent evt) {
+					String oldValue = fValue;
+					String name = fCombo.getText();
+					fValue = getValueForName(name);
+					setPresentsDefaultValue(false);
+					fireValueChanged("field_editor_value", oldValue, name + "," + fValue);
+				}
+
+			});
+		}
+	}
+
 	private Combo getComboBoxControl(Composite parent) {
 		if (fCombo == null) {
 			fCombo = new Combo(parent, 8);

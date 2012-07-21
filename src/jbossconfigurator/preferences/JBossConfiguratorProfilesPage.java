@@ -5,7 +5,6 @@ import jbossconfigurator.preferences.constants.strings.PreferenceStringConstants
 import jbossconfigurator.preferences.constants.types.PreferenceTypeConstants;
 import jbossconfigurator.preferences.widgets.ConfigurableComboFieldEditor;
 
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -23,53 +22,21 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * JBoss.
  */
 
-public class JBossConfiguratorProfilesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class JBossConfiguratorProfilesPage extends AbstractJBossConfiguratorPreferencesPage implements IWorkbenchPreferencePage {
 
-	protected IPropertyChangeListener listener;
 	protected Button save;
 	protected Button delete;
-	protected ConfigurableComboFieldEditor profiles;
 	protected StringFieldEditor profileName;
 	protected StringFieldEditor userName;
 	protected StringFieldEditor password;
 	protected StringFieldEditor url;
+	protected ConfigurableComboFieldEditor profiles;
 
 	public JBossConfiguratorProfilesPage() {
 		super(GRID);
 		noDefaultAndApplyButton();
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 		setDescription(PreferenceStringConstants.PROFILES_DESCRIPTION);
-	}
-	protected String[][] getProfiles() {
-		String profiles = getPreferenceStore().getString(PreferenceTypeConstants.P_PROFILE_NAME);
-		String[] profileList = profiles.split("}");
-		if (profileList != null && profileList.length > 0 && profileList[0] != "") {
-			String[][] nameValues = new String[profileList.length][2];
-			for (int i = 0; i < profileList.length; i++) {
-				String profile = profileList[i];
-				String[] profileValues = profile.split(",");
-				if (profileValues.length != 4) {
-					nameValues[i][0] = "";
-					nameValues[i][1] = "";
-					continue;
-				}
-				String name = profileValues[0];
-				String user = profileValues[1];
-				String pass = profileValues[2];
-				String url = profileValues[3];
-				nameValues[i][0] = name;
-				nameValues[i][1] = user + "," + pass + "," + url;
-			}
-			return nameValues;
-		}
-
-		return new String[][]{{"", ""}};
-	}
-
-
-	protected ConfigurableComboFieldEditor constructComboBox() {
-		return new ConfigurableComboFieldEditor(PreferenceTypeConstants.P_PROFILE_NAME, PreferenceStringConstants.PROFILE, getProfiles(),
-				getFieldEditorParent());
 	}
 
 	public void createFieldEditors() {

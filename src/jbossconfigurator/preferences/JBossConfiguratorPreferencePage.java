@@ -17,12 +17,14 @@ import javax.xml.xpath.XPathFactory;
 import jbossconfigurator.Activator;
 import jbossconfigurator.preferences.constants.strings.PreferenceStringConstants;
 import jbossconfigurator.preferences.constants.types.PreferenceTypeConstants;
+import jbossconfigurator.preferences.widgets.ConfigurableComboFieldEditor;
 
 import org.apache.xerces.parsers.DOMParser;
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,13 +46,40 @@ import org.xml.sax.SAXException;
  * preference store.
  */
 
-public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class JBossConfiguratorPreferencePage extends AbstractJBossConfiguratorPreferencesPage implements IWorkbenchPreferencePage {
 
 	protected Button changeDataSource;
 	protected XPathFactory factory;
 	protected XPath xpath;
 	protected NamespaceContext context;
 	protected DOMParser parser;
+	protected ConfigurableComboFieldEditor profiles;
+	protected StringFieldEditor userName;
+
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible) {
+			if (profiles != null) {
+				profiles.setNameValues(getProfiles());
+				clearFields();
+			}
+		}
+	}
+
+	protected void clearFields() {
+		if (userName != null) {
+			userName.setStringValue("");
+		}
+		if (password != null) {
+			password.setStringValue("");
+		}
+		if (url != null) {
+			url.setStringValue("");
+		}
+	}
+
+	protected StringFieldEditor password;
+	protected StringFieldEditor url;
 
 	public JBossConfiguratorPreferencePage() {
 		super(GRID);
@@ -65,10 +94,19 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 	 * editor knows how to save and restore itself.
 	 */
 	public void createFieldEditors() {
+		profiles = constructComboBox();
+		profiles.addListener(listener);
+		userName = new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_USER, PreferenceStringConstants.JBOSS_USER, getFieldEditorParent());
+		password = new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_PASSWORD, PreferenceStringConstants.JBOSS_PASSWORD, getFieldEditorParent());
+		url = new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_URL, PreferenceStringConstants.JBOSS_URL, getFieldEditorParent());
+		userName.setEnabled(false, getFieldEditorParent());
+		password.setEnabled(false, getFieldEditorParent());
+		url.setEnabled(false, getFieldEditorParent());
 		addField(new FileFieldEditor(PreferenceTypeConstants.P_JBOSS_DS_PATH, PreferenceStringConstants.JBOSS_DS_PATH, getFieldEditorParent()));
-		addField(new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_USER, PreferenceStringConstants.JBOSS_USER, getFieldEditorParent()));
-		addField(new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_PASSWORD, PreferenceStringConstants.JBOSS_PASSWORD, getFieldEditorParent()));
-		addField(new StringFieldEditor(PreferenceTypeConstants.P_JBOSS_URL, PreferenceStringConstants.JBOSS_URL, getFieldEditorParent()));
+		addField(userName);
+		addField(password);
+		addField(url);
+		addField(profiles);
 	}
 
 	/*
@@ -81,6 +119,25 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 		factory = XPathFactory.newInstance();
 		xpath = factory.newXPath();
 		parser = new DOMParser();
+
+		listener = new IPropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent event) {
+				String newValue = (String) event.getNewValue();
+				if (newValue != null && newValue.trim() != "") {
+					String[] values = newValue.split(",");
+					if (values != null) {
+						if (values.length == 4) {
+							userName.setStringValue(values[1]);
+							password.setStringValue(values[2]);
+							url.setStringValue(values[3]);
+						} else {
+							clearFields();
+						}
+					}
+				}
+			}
+
+		};
 	}
 
 	protected Control createContents(Composite parent) {
@@ -116,14 +173,14 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 		return null;
 	}
 
-	private void updateNode(Document doc, String name, String pref) {
+	private void updateNode(Document doc, String name, String value) {
 		System.out.println("Attempting to update " + name);
 		Node node = getAttributeWithName(doc, name);
 		if (node == null) {
 			System.err.println("Error retrieving " + name);
 			return;
 		}
-		updateNode(node, pref);
+		updateNode(node, value);
 	}
 
 	private void updateDataSource(File dataSource) {
@@ -131,9 +188,9 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 		try {
 			parser.parse(dataSource.getAbsolutePath());
 			Document root = parser.getDocument();
-			updateNode(root, PreferenceStringConstants.JBOSS_USER_ATTRIBUTE, PreferenceTypeConstants.P_JBOSS_USER);
-			updateNode(root, PreferenceStringConstants.JBOSS_PASSWORD_ATTRIBUTE, PreferenceTypeConstants.P_JBOSS_PASSWORD);
-			updateNode(root, PreferenceStringConstants.JBOSS_URL_ATTRIBUTE, PreferenceTypeConstants.P_JBOSS_URL);
+			updateNode(root, PreferenceStringConstants.JBOSS_USER_ATTRIBUTE, userName.getStringValue());
+			updateNode(root, PreferenceStringConstants.JBOSS_PASSWORD_ATTRIBUTE, password.getStringValue());
+			updateNode(root, PreferenceStringConstants.JBOSS_URL_ATTRIBUTE, url.getStringValue());
 			saveFile(dataSource, root);
 		} catch (SAXException e) {
 			System.err.println("Issue parsing data source file.");
@@ -159,9 +216,7 @@ public class JBossConfiguratorPreferencePage extends FieldEditorPreferencePage i
 
 	}
 
-	private void updateNode(Node node, String preference) {
-		IPreferenceStore preferencesStore = getPreferenceStore();
-		String value = preferencesStore.getString(preference);
+	private void updateNode(Node node, String value) {
 		System.out.println("Updating with value: '" + value + "'");
 		node.getFirstChild().setNodeValue(value);
 	}
