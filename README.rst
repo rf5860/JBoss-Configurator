@@ -17,16 +17,16 @@ Simply drop this file into your Eclipse *dropins* directory.
 
 Next - start Eclipse, and choose **Preferences --> JBoss Configurator**.
 
-.. image:: JBoss-Configurator/doc/images/preferences.png
+.. image:: https://github.com/rf5860/JBoss-Configurator/raw/master/doc/images/change-datasource.png
 
 Configure the **JBoss Datasource File** to point at the relevant datasource under your JBoss directory.
 
-.. image:: JBoss-Configurator/doc/images/jboss-directory.png
+.. image:: https://github.com/rf5860/JBoss-Configurator/raw/master/doc/images/jboss-directory.png
 
 Next, navigate to the **JBoss Configurator Preferences** sub-page. From here, you can enter any relevant connection details, and maintain a list of connection profiles.
 
-.. image:: JBoss-Configurator/doc/images/create-profile.png
+.. image:: https://github.com/rf5860/JBoss-Configurator/raw/master/doc/images/create-profile.png
 
 Once a profile has been created, you can select it via the main preferences page. After selecting the profile, simply hit **Change Data Source** and the datasource file should be automatically updated.
 
-.. image:: JBoss-Configurator/doc/images/change-datasource.png
+.. image:: https://github.com/rf5860/JBoss-Configurator/raw/master/doc/images/change-datasource.png
